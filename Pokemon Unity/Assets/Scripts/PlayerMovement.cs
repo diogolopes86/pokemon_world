@@ -3,6 +3,7 @@
 using UnityEngine;
 using System.Collections;
 
+
 public class PlayerMovement : MonoBehaviour
 {
     public static PlayerMovement player;
@@ -79,6 +80,10 @@ public class PlayerMovement : MonoBehaviour
     public AudioClip jumpClip;
     public AudioClip landClip;
 
+    private double mean;
+    private double stdDev;
+    private int u1;
+    private int u2;
 
     void Awake()
     {
@@ -1157,7 +1162,24 @@ public class PlayerMovement : MonoBehaviour
     {
         if (accessedMapSettings.getEncounterList(encounterLocation).Length > 0)
         {
+
+
+            Random rand = new Random(); //reuse this if you are generating many
+
+
             if (Random.value <= accessedMapSettings.getEncounterProbability())
+
+          
+              u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
+              u2 = 1.0 - rand.nextDouble();
+             double randStdNormal = System.Math.Sqrt(-2.0 * System.Math.Log(u1)) *
+                         System.Math.Sin(2.0 * System.Math.PI * u2); //random normal(0,1)
+            double randNormal =
+                         mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
+
+
+
+
             {
                 if (setCheckBusyWith(Scene.main.Battle.gameObject))
                 {
