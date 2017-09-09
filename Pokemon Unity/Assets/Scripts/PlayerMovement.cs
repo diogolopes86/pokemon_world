@@ -2,7 +2,7 @@
 
 using UnityEngine;
 using System.Collections;
-
+using System;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -72,7 +72,7 @@ public class PlayerMovement : MonoBehaviour
     private int mostRecentDirectionPressed = 0;
     private float directionChangeInputDelay = 0.08f;
 
-//	private SceneTransition sceneTransition;
+    //	private SceneTransition sceneTransition;
 
     private AudioSource PlayerAudio;
 
@@ -80,10 +80,6 @@ public class PlayerMovement : MonoBehaviour
     public AudioClip jumpClip;
     public AudioClip landClip;
 
-    private double mean;
-    private double stdDev;
-    private int u1;
-    private int u2;
 
     void Awake()
     {
@@ -309,7 +305,7 @@ public class PlayerMovement : MonoBehaviour
         while (true)
         {
             still = true;
-                //the player is still, but if they've just finished moving a space, moving is still true for this frame (see end of coroutine)
+            //the player is still, but if they've just finished moving a space, moving is still true for this frame (see end of coroutine)
             if (canInput)
             {
                 if (!surfing && !bike)
@@ -485,8 +481,8 @@ public class PlayerMovement : MonoBehaviour
                                           newAnimationName);
             //pawnReflectionSprite.SetTexture("_MainTex", Resources.Load<Texture>("PlayerSprites/"+SaveData.currentSave.getPlayerSpritePrefix()+newAnimationName));
             framesPerSec = fps;
-            secPerFrame = 1f / (float) framesPerSec;
-            frames = Mathf.RoundToInt((float) spriteSheet.Length / 4f);
+            secPerFrame = 1f / (float)framesPerSec;
+            frames = Mathf.RoundToInt((float)spriteSheet.Length / 4f);
             if (frame >= frames)
             {
                 frame = 0;
@@ -512,7 +508,7 @@ public class PlayerMovement : MonoBehaviour
         frame = 0;
         frames = 4;
         framesPerSec = walkFPS;
-        secPerFrame = 1f / (float) framesPerSec;
+        secPerFrame = 1f / (float)framesPerSec;
         while (true)
         {
             for (int i = 0; i < 4; i++)
@@ -879,7 +875,7 @@ public class PlayerMovement : MonoBehaviour
             {
                 //increment increases slowly to 1 over the frames
                 increment += (1f / speed) * Time.deltaTime;
-                    //speed is determined by how many squares are crossed in one second
+                //speed is determined by how many squares are crossed in one second
                 if (increment > 1)
                 {
                     increment = 1;
@@ -1160,68 +1156,57 @@ public class PlayerMovement : MonoBehaviour
 
     public IEnumerator wildEncounter(WildPokemonInitialiser.Location encounterLocation)
     {
+        float numero;
+        System.Random aleatorio = new System.Random();
+        numero = aleatorio.Next(0, 10);
+
         if (accessedMapSettings.getEncounterList(encounterLocation).Length > 0)
-        {
-
-
-            Random rand = new Random(); //reuse this if you are generating many
-
-
-            if (Random.value <= accessedMapSettings.getEncounterProbability())
-
-          
-              u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
-              u2 = 1.0 - rand.nextDouble();
-             double randStdNormal = System.Math.Sqrt(-2.0 * System.Math.Log(u1)) *
-                         System.Math.Sin(2.0 * System.Math.PI * u2); //random normal(0,1)
-            double randNormal =
-                         mean + stdDev * randStdNormal; //random normal(mean,stdDev^2)
-
-
-
-
-            {
-                if (setCheckBusyWith(Scene.main.Battle.gameObject))
                 {
-                    BgmHandler.main.PlayOverlay(Scene.main.Battle.defaultWildBGM,
-                        Scene.main.Battle.defaultWildBGMLoopStart);
 
-                    //SceneTransition sceneTransition = Dialog.transform.GetComponent<SceneTransition>();
-
-                    yield return StartCoroutine(ScreenFade.main.FadeCutout(false, ScreenFade.slowedSpeed, null));
-                    //yield return new WaitForSeconds(sceneTransition.FadeOut(1f));
-                    Scene.main.Battle.gameObject.SetActive(true);
-                    StartCoroutine(Scene.main.Battle.control(accessedMapSettings.getRandomEncounter(encounterLocation)));
-
-                    while (Scene.main.Battle.gameObject.activeSelf)
+            if (numero<= accessedMapSettings.getEncounterProbability())
                     {
-                        yield return null;
+                        if (setCheckBusyWith(Scene.main.Battle.gameObject))
+                        {
+                            BgmHandler.main.PlayOverlay(Scene.main.Battle.defaultWildBGM,
+                                Scene.main.Battle.defaultWildBGMLoopStart);
+
+                            //SceneTransition sceneTransition = Dialog.transform.GetComponent<SceneTransition>();
+
+                            yield return StartCoroutine(ScreenFade.main.FadeCutout(true, ScreenFade.slowedSpeed, null));
+                            //yield return new WaitForSeconds(sceneTransition.FadeOut(1f));
+                            Scene.main.Battle.gameObject.SetActive(true);
+                            StartCoroutine(Scene.main.Battle.control(accessedMapSettings.getRandomEncounter(encounterLocation)));
+
+                            while (Scene.main.Battle.gameObject.activeSelf)
+                            {
+                                yield return null;
+                            }
+
+                            //yield return new WaitForSeconds(sceneTransition.FadeIn(0.4f));
+                            yield return StartCoroutine(ScreenFade.main.Fade(true, 0.4f));
+
+                            unsetCheckBusyWith(Scene.main.Battle.gameObject);
+                        }
                     }
+                }
+            }
 
-                    //yield return new WaitForSeconds(sceneTransition.FadeIn(0.4f));
-                    yield return StartCoroutine(ScreenFade.main.Fade(true, 0.4f));
+            private void playClip(AudioClip clip)
+            {
+                PlayerAudio.clip = clip;
+                PlayerAudio.volume = PlayerPrefs.GetFloat("sfxVolume");
+                PlayerAudio.Play();
+            }
 
-                    unsetCheckBusyWith(Scene.main.Battle.gameObject);
+            private void playBump()
+            {
+                if (!PlayerAudio.isPlaying)
+                {
+                    if (!moving && !overrideAnimPause)
+                    {
+                        playClip(bumpClip);
+                    }
                 }
             }
         }
-    }
-
-    private void playClip(AudioClip clip)
-    {
-        PlayerAudio.clip = clip;
-        PlayerAudio.volume = PlayerPrefs.GetFloat("sfxVolume");
-        PlayerAudio.Play();
-    }
-
-    private void playBump()
-    {
-        if (!PlayerAudio.isPlaying)
-        {
-            if (!moving && !overrideAnimPause)
-            {
-                playClip(bumpClip);
-            }
-        }
-    }
-}
+        

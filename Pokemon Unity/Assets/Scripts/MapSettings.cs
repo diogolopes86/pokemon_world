@@ -211,7 +211,7 @@ public class MapSettings : MonoBehaviour
     // returns the probability of encounter
     public float getEncounterProbability()
     {
-        float x = 1.25f;
+        float x = 1.25f;//aqui metere el programa de numeros brandoms :v 
         if (pokemonRarity == PokemonRarity.VeryCommon)
         {
             x = 10f;
